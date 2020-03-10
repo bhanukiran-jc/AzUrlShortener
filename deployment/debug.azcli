@@ -1,0 +1,10 @@
+
+
+az group create -n AzSimpleUrlShortener -l eastus
+
+# validate with Parameter file
+az group deployment validate -g AzSimpleUrlShortener  --template-file "deployment/azureDeploy.json" --parameters "deployment/azureDeploy.params.json"  --verbose 
+
+# deploy it
+az group deployment create  -g AzSimpleUrlShortener -n cloud5minsv1 --template-file "deployment/azureDeploy.json" --parameters "deployment/azureDeploy.params.json"  --verbose 
+
