@@ -2,67 +2,67 @@
     "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "subscriptionId": {
-            "type": "string"
+        "baseName": {
+            "defaultValue": "ShortenerTools",
+            "type": "string",
+            "metadata": {
+                "description": "Name use as base-template to named the resources to be deployed in Azure."
+            }
         },
-        "name": {
-            "type": "string"
+        "GitHubURL": {
+            "type": "string",
+            "defaultValue": "git@github.com:FBoucher/AzUrlShortener.git",
+            "metadata": {
+                "description": "The URL of GitHub (ending by .git)"
+            }
         },
-        "location": {
-            "type": "string"
+        "GitHubBranch": {
+            "type": "string",
+            "defaultValue": "master",
+            "metadata": {
+                "description": "Name of the branch to use when deploying (Default = master)."
+            }
         },
-        "hostingEnvironment": {
-            "type": "string"
+        "ExpireOn":{
+            "type":"string",
+            "defaultValue":"[utcNow('yyyy-MM-dd')]",
+            "metadata": {
+                "description": "Just a text value (format: yyyy-MM-dd) that express when it is safe to delete these resources"
+            }
         },
-        "hostingPlanName": {
-            "type": "string"
-        },
-        "serverFarmResourceGroup": {
-            "type": "string"
-        },
-        "alwaysOn": {
-            "type": "bool"
-        },
-        "storageAccountName": {
-            "type": "string"
-        },
-        "linuxFxVersion": {
-            "type": "string"
-        },
-        "sku": {
-            "type": "string"
-        },
-        "skuCode": {
-            "type": "string"
-        },
-        "workerSize": {
-            "type": "string"
-        },
-        "workerSizeId": {
-            "type": "string"
-        },
-        "numberOfWorkers": {
-            "type": "string"
+        "OwnerName":{
+            "type":"string",
+            "defaultValue":"",
+            "metadata": {
+                "description": "Owner of this deployment, person to contact for question."
+            }
         }
+    },
+    "variables":{
+        "suffix": "[substring(toLower(uniqueString(resourceGroup().id, resourceGroup().location)),0,5)]",
+        "funcAppName": "[toLower(concat(parameters('baseName'), variables('suffix')))]",
+        "funcStorageAccountName": "[tolower(concat(substring(parameters('baseName'), 0, min(length(parameters('baseName')),16)), variables('suffix'), 'stg'))]",
+        "funcHhostingPlanName": "[concat(substring(parameters('baseName'), 0, min(length(parameters('baseName')),14)), variables('suffix'), 'plan')]",
+        "insghtsAppName":"[concat(substring(parameters('baseName'), 0, min(length(parameters('baseName')),14)), variables('suffix'), '-meta')]"
     },
     "resources": [
         {
             "apiVersion": "2018-11-01",
-            "name": "[parameters('name')]",
+            "name": "[variables('funcAppName')]",
             "type": "Microsoft.Web/sites",
             "kind": "functionapp",
-            "location": "[parameters('location')]",
+            "location": "[resourceGroup().location]",
             "tags": {
-                "Owner": "Frank",
-                "ExpireOn": "2020-06-10"
+                "Owner": "[parameters('OwnerName')]",
+                "ExpireOn": "[parameters('ExpireOn')]"
             },
             "dependsOn": [
-                "microsoft.insights/components/ShortenerTools",
-                "[concat('Microsoft.Web/serverfarms/', parameters('hostingPlanName'))]",
-                "[concat('Microsoft.Storage/storageAccounts/', parameters('storageAccountName'))]"
+                "[concat('microsoft.insights/components/', variables('insghtsAppName'))]",
+                "[concat('Microsoft.Web/serverfarms/', variables('funcHhostingPlanName'))]",
+                "[concat('Microsoft.Storage/storageAccounts/',variables('funcStorageAccountName'))]"
             ],
             "properties": {
-                "name": "[parameters('name')]",
+                "name": "[variables('funcAppName')]",
                 "siteConfig": {
                     "appSettings": [
                         {
@@ -75,73 +75,68 @@
                         },
                         {
                             "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
-                            "value": "[reference('microsoft.insights/components/ShortenerTools', '2015-05-01').InstrumentationKey]"
+                            "value": "[reference(concat('microsoft.insights/components/', variables('insghtsAppName')), '2015-05-01').InstrumentationKey]"
                         },
                         {
                             "name": "APPLICATIONINSIGHTS_CONNECTION_STRING",
-                            "value": "[reference('microsoft.insights/components/ShortenerTools', '2015-05-01').ConnectionString]"
+                            "value": "[reference(concat('microsoft.insights/components/', variables('insghtsAppName')), '2015-05-01').ConnectionString]"
                         },
                         {
                             "name": "AzureWebJobsStorage",
-                            "value": "[concat('DefaultEndpointsProtocol=https;AccountName=',parameters('storageAccountName'),';AccountKey=',listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), '2019-06-01').keys[0].value,';EndpointSuffix=','core.windows.net')]"
+                            "value": "[concat('DefaultEndpointsProtocol=https;AccountName=',variables('funcStorageAccountName'),';AccountKey=',listKeys(resourceId('Microsoft.Storage/storageAccounts',variables('funcStorageAccountName')), '2019-06-01').keys[0].value,';EndpointSuffix=','core.windows.net')]"
                         },
                         {
                             "name": "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING",
-                            "value": "[concat('DefaultEndpointsProtocol=https;AccountName=',parameters('storageAccountName'),';AccountKey=',listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), '2019-06-01').keys[0].value,';EndpointSuffix=','core.windows.net')]"
+                            "value": "[concat('DefaultEndpointsProtocol=https;AccountName=',variables('funcStorageAccountName'),';AccountKey=',listKeys(resourceId('Microsoft.Storage/storageAccounts',variables('funcStorageAccountName')), '2019-06-01').keys[0].value,';EndpointSuffix=','core.windows.net')]"
                         },
                         {
                             "name": "WEBSITE_CONTENTSHARE",
-                            "value": "[concat(toLower(parameters('name')), 'ba91')]"
+                            "value": "[concat(variables('funcAppName'), 'ba91')]"
                         }
                     ]
                 },
-                "serverFarmId": "[concat('/subscriptions/', parameters('subscriptionId'),'/resourcegroups/', parameters('serverFarmResourceGroup'), '/providers/Microsoft.Web/serverfarms/', parameters('hostingPlanName'))]",
-                "hostingEnvironment": "[parameters('hostingEnvironment')]",
+                "serverFarmId": "[resourceId('Microsoft.Web/serverfarms/', variables('funcHhostingPlanName'))]",                
+                "hostingEnvironment": "",
                 "clientAffinityEnabled": true
             }
         },
         {
             "apiVersion": "2018-11-01",
-            "name": "[parameters('hostingPlanName')]",
+            "name": "[variables('funcHhostingPlanName')]",
             "type": "Microsoft.Web/serverfarms",
-            "location": "[parameters('location')]",
-            "kind": "",
+            "location": "[resourceGroup().location]",
             "tags": {
-                "Owner": "Frank",
-                "ExpireOn": "2020-06-10"
+                "Owner": "[parameters('OwnerName')]",
+                "ExpireOn": "[parameters('ExpireOn')]"
             },
-            "dependsOn": [],
             "properties": {
-                "name": "[parameters('hostingPlanName')]",
-                "workerSize": "[parameters('workerSize')]",
-                "workerSizeId": "[parameters('workerSizeId')]",
-                "numberOfWorkers": "[parameters('numberOfWorkers')]",
-                "hostingEnvironment": "[parameters('hostingEnvironment')]"
+                "name": "[variables('funcHhostingPlanName')]",
+                "computeMode": "Dynamic"
             },
             "sku": {
-                "Tier": "[parameters('sku')]",
-                "Name": "[parameters('skuCode')]"
+                "Tier": "Dynamic",
+                "Name": "Y1"
             }
         },
         {
             "apiVersion": "2015-05-01",
-            "name": "ShortenerTools",
+            "name": "[variables('insghtsAppName')]",
             "type": "microsoft.insights/components",
-            "location": "eastus",
+            "location": "[resourceGroup().location]",
             "tags": {
-                "Owner": "Frank",
-                "ExpireOn": "2020-06-10"
+                "Owner": "[parameters('OwnerName')]",
+                "ExpireOn": "[parameters('ExpireOn')]"
             },
             "properties": {
-                "ApplicationId": "[parameters('name')]",
+                "ApplicationId": "[variables('funcAppName')]",
                 "Request_Source": "IbizaWebAppExtensionCreate"
             }
         },
         {
             "apiVersion": "2019-06-01",
             "type": "Microsoft.Storage/storageAccounts",
-            "name": "[parameters('storageAccountName')]",
-            "location": "[parameters('location')]",
+            "name": "[variables('funcStorageAccountName')]",
+            "location": "[resourceGroup().location]",
             "sku": {
                 "name": "Standard_LRS"
             },

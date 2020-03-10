@@ -1,6 +1,6 @@
 
 
-az group create -n AzSimpleUrlShortener -l eastus
+az group create -n AzUrlShortener -l eastus
 
 # validate with Parameter file
 az group deployment validate -g AzSimpleUrlShortener  --template-file "deployment/azureDeploy.json" --parameters "deployment/azureDeploy.params.json"  --verbose 
