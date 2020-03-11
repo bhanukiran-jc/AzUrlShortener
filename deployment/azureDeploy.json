@@ -44,7 +44,9 @@
         "funcStorageAccountName": "[tolower(concat(substring(parameters('baseName'), 0, min(length(parameters('baseName')),16)), variables('suffix'), 'stg'))]",
         "funcHhostingPlanName": "[concat(substring(parameters('baseName'), 0, min(length(parameters('baseName')),14)), variables('suffix'), 'plan')]",
         "insghtsAppName":"[concat(substring(parameters('baseName'), 0, min(length(parameters('baseName')),14)), variables('suffix'), '-meta')]",
-        "functionProjectFolder": "src/shortenerTools"
+        "functionProjectFolder": "src/shortenerTools",
+        "UrlsStorageAccountName": "[concat('urldata', variables('suffix'), 'stg')]",
+        "UrlsTableName":"UrlsDetails"
     },
     "resources": [
         {
@@ -163,6 +165,20 @@
             },
             "properties": {
                 "supportsHttpsTrafficOnly": true
+            }
+        },
+        {
+            "name": "[variables('UrlsStorageAccountName')]",
+            "type": "Microsoft.Storage/storageAccounts",
+            "apiVersion": "2015-06-15",
+            "location": "[resourceGroup().location]",
+            "tags": {
+                "displayName": "[variables('UrlsStorageAccountName')]",
+                "Owner": "[parameters('OwnerName')]",
+                "ExpireOn": "[parameters('ExpireOn')]"
+            },
+            "properties": {
+                "accountType": "Standard_LRS"
             }
         }
     ]
