@@ -33,7 +33,6 @@ namespace Cloud5mins.Function
             }
 
             ShortRequest input = await req.Content.ReadAsAsync<ShortRequest>();
-
             if (input == null)
             {
                 return req.CreateResponse(HttpStatusCode.NotFound);
@@ -51,22 +50,22 @@ namespace Cloud5mins.Function
                 await tableOut.ExecuteAsync(keyAdd); 
             }
             
+            var result = new ShortResponse();
+
             try
             {
-                var result = new ShortResponse();
+                ShortUrl newRow;
                 string longUrl = input.Url.Trim();
                 string vanity = input.Vanity.Trim();
 
-                log.LogInformation($"longUrl={longUrl}, vanity={vanity}");
-                log.LogInformation($"Current key: {keyTable.Id}");
-                
                 var host = req.RequestUri.GetLeftPart(UriPartial.Authority);
                 string endUrl = Utility.GetValidEndUrl(vanity, keyTable.Id++);
 
-                log.LogInformation($"host={host} endUrl={endUrl}");
+                //log.LogInformation($"host={host} endUrl={endUrl}");
 
                 result = Utility.BuildResponse(host, longUrl, endUrl);
-                var newRow = Utility.BuildRow(host, longUrl, endUrl);
+                newRow = StorageTableHelper.BuildRow(host, longUrl, endUrl);
+          
 
                 async Task saveKeyAsync()
                 {
@@ -85,6 +84,7 @@ namespace Cloud5mins.Function
                     var operationResult = await tableOut.ExecuteAsync(insOp);  
                 }
 
+                //await buildOutputs();
                 await saveKeyAsync();
 
                 if(await CheckIfExistRowAsync())
@@ -93,13 +93,14 @@ namespace Cloud5mins.Function
                     await saveRowAsync();
 
                 log.LogInformation("Short Url created.");
-                return req.CreateResponse(HttpStatusCode.OK, result);
             }
             catch (Exception ex)
             {
                 log.LogError(ex, "An unexpected error was encountered.");
                 return req.CreateErrorResponse(HttpStatusCode.BadRequest, ex);
             }
+
+            return req.CreateResponse(HttpStatusCode.OK, result);
         }
     }
 }

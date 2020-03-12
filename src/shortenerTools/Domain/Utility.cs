@@ -41,16 +41,5 @@ namespace Cloud5mins.domain
                 ShortUrl = string.Join(host,endUrl)
             };
         }
-
-        public static ShortUrl BuildRow(string host, string longUrl, string endUrl){
-
-            var newUrl = new ShortUrl
-                {
-                    PartitionKey = endUrl.First().ToString(),
-                    RowKey = endUrl,
-                    Url = longUrl
-                };
-            return newUrl;
-        }
     }
 }

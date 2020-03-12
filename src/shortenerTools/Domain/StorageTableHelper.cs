@@ -11,5 +11,16 @@ namespace Cloud5mins.domain
             var selOp = TableOperation.Retrieve<ShortUrl>(partitionKey,rowKey);
             return await tableOut.ExecuteAsync(selOp);  
         }
+
+        public static ShortUrl BuildRow(string host, string longUrl, string endUrl){
+
+            var newUrl = new ShortUrl
+            {
+                PartitionKey = endUrl.First().ToString(),
+                RowKey = endUrl,
+                Url = longUrl
+            };
+            return newUrl;
+        }
     }
 }
