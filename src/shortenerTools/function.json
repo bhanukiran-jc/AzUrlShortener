@@ -7,14 +7,14 @@
         "partitionKey": "1",
         "rowKey": "KEY",
         "take": "1",
-        "connection": "AzureWebJobsStorage",
+        "connection": "UlsDataStorage",
         "direction": "in"
       },
       {
         "type": "table",
         "name": "tableOut",
         "tableName": "UrlsDetails",
-        "connection": "AzureWebJobsStorage",
+        "connection": "UlsDataStorage",
         "direction": "out"
       },
       {

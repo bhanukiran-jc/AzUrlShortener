@@ -98,6 +98,10 @@
                         {
                             "name": "PROJECT",
                             "value": "[variables('functionProjectFolder')]"
+                        },
+                        {
+                            "name": "UlsDataStorage",
+                            "value": "[concat('DefaultEndpointsProtocol=https;AccountName=',variables('UrlsStorageAccountName'),';AccountKey=',listKeys(resourceId('Microsoft.Storage/storageAccounts',variables('UrlsStorageAccountName')), '2019-06-01').keys[0].value,';EndpointSuffix=','core.windows.net')]"
                         }
                     ]
                 },
