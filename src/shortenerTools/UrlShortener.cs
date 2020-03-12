@@ -41,6 +41,18 @@ namespace cloud5mins.Function
             {
                 return req.CreateResponse(HttpStatusCode.NotFound);
             }
+
+            if (keyTable == null)
+            {
+                keyTable = new NextId
+                {
+                    PartitionKey = "1",
+                    RowKey = "KEY",
+                    Id = 1024
+                };
+                var keyAdd = TableOperation.Insert(keyTable);
+                await tableOut.ExecuteAsync(keyAdd); 
+            }
             
             try
             {
@@ -56,15 +68,36 @@ namespace cloud5mins.Function
 
                 log.LogInformation($"host={host} endUrl={endUrl}");
 
-                result = BuildResponseAsync(host, longUrl, endUrl);
-                var newRow = SaveRow(host, longUrl, endUrl);
+                result = BuildResponse(host, longUrl, endUrl);
+                var newRow = BuildRow(host, longUrl, endUrl);
 
-                var updOp = TableOperation.Replace(keyTable);
-                await tableOut.ExecuteAsync(updOp);
+                async Task saveKeyAsync()
+                {
+                    var updOp = TableOperation.Replace(keyTable);
+                    await tableOut.ExecuteAsync(updOp);
+                }
 
-                var insOp = TableOperation.Insert(newRow);
-                var operationResult = await tableOut.ExecuteAsync(insOp);  
+                async Task<bool> CheckIfExistRowAsync(){
+                    var selOp = TableOperation.Retrieve<ShortUrl>(newRow.PartitionKey,newRow.RowKey);
+                    var rowCheck = await tableOut.ExecuteAsync(selOp);  
 
+                    return(rowCheck.HttpStatusCode == (int)HttpStatusCode.OK);
+                }
+
+                async Task saveRowAsync()
+                {
+                    var insOp = TableOperation.Insert(newRow);
+                    var operationResult = await tableOut.ExecuteAsync(insOp);  
+                }
+
+                await saveKeyAsync();
+
+                if(await CheckIfExistRowAsync())
+                    return req.CreateResponse(HttpStatusCode.Conflict, "This Short URL already exist.");
+                else
+                    await saveRowAsync();
+
+                log.LogInformation("Short Url created.");
                 return req.CreateResponse(HttpStatusCode.OK, result);
             }
             catch (Exception ex)
@@ -101,7 +134,7 @@ namespace cloud5mins.Function
             return string.Join(string.Empty, s.Reverse());
         }
 
-        private static ShortResponse BuildResponseAsync(string host, string longUrl, string endUrl)
+        private static ShortResponse BuildResponse(string host, string longUrl, string endUrl)
         {
             return new ShortResponse{
                 LongUrl = longUrl,
@@ -109,11 +142,11 @@ namespace cloud5mins.Function
             };
         }
 
-        private static ShortUrl SaveRow(string host, string longUrl, string endUrl){
+        private static ShortUrl BuildRow(string host, string longUrl, string endUrl){
 
             var newUrl = new ShortUrl
                 {
-                    PartitionKey = "2020",
+                    PartitionKey = endUrl.First().ToString(),
                     RowKey = endUrl,
                     Url = longUrl
                 };
