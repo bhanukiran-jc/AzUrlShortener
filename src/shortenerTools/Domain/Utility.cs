@@ -52,12 +52,5 @@ namespace Cloud5mins.domain
                 };
             return newUrl;
         }
-
-        public static async Task<bool> CheckIfExistRowAsync(){
-                var selOp = TableOperation.Retrieve<ShortUrl>(newRow.PartitionKey,newRow.RowKey);
-                var rowCheck = await tableOut.ExecuteAsync(selOp);  
-
-                return(rowCheck.HttpStatusCode == (int)HttpStatusCode.OK);
-            }
     }
 }
