@@ -1,6 +1,6 @@
 using Microsoft.WindowsAzure.Storage.Table;
 
-namespace cloud5mins.models
+namespace Cloud5mins.domain
 {
     public class ShortUrl : TableEntity
     {

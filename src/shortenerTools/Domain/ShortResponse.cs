@@ -1,4 +1,4 @@
-namespace cloud5mins.models
+namespace Cloud5mins.domain
 {
     public class ShortResponse
     {
