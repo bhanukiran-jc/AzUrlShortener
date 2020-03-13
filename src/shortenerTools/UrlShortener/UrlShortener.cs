@@ -12,11 +12,31 @@ using System.Net.Http;
 using System.Linq;
 using Microsoft.WindowsAzure.Storage.Table;
 using Cloud5mins.domain;
+using Microsoft.Azure.WebJobs.Host.Config;
+using Microsoft.Extensions.Hosting;
 
 namespace Cloud5mins.Function
 {
     public static class UrlShortener
     {
+
+        static async Task Main()
+        {
+            var builder = new HostBuilder();
+            //builder.UseEnvironment("development");
+            builder.ConfigureWebJobs(b =>
+                    {
+                        b.AddAzureStorage();
+                        b.AddHttp();
+                    });
+            var host = builder.Build();
+            using (host)
+            {
+                await host.RunAsync();
+            }
+        }
+
+
         [FunctionName("UrlShortener")]
         public static async Task<HttpResponseMessage> Run(
             [HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequestMessage req,
