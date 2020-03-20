@@ -2,7 +2,6 @@
     "$schema": "http://json.schemastore.org/proxies",
     "proxies": {
       "Domain Redirect": {
-        "debug": true,
         "matchCondition": {
           "route": "/{shortUrl}"
         },

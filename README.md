@@ -4,6 +4,8 @@ An simple and easy budget friendly Url Shortener for anyone. It runs in Azure (M
 
 > If you don't own an Azure subscription already, you can create your **free** account today. It comes with 200$ credit, so you can experience almost everything without spending a dime. [Create your free Azure account today](https://azure.microsoft.com/en-us/free?WT.mc_id=azurlshortener-github-frbouche)
 
+> This project was inspire by a project created by [Jeremy Likness](https://github.com/JeremyLikness) that you can find here [jlik.me](https://github.com/JeremyLikness/jlik.me).
+
 
 ## To deploy
 
@@ -29,6 +31,11 @@ Once all the resources are created you will end-up with:
 - 2 Storage account: 1 for the Azure Function, the second use as Data Storage leveraging the [Azure Table storage](https://azure.microsoft.com/en-us/services/storage/tables/?WT.mc_id=azurlshortener-github-frbouche).
 
 ![ArmResult][ArmResult]
+
+
+### Deploy using Azure CLI
+
+An alternative method to deploy is to use the Azure CLI command that you can find in the [debug.azcli](deployment/debug.azcli) file.
 
 
 ### Post deployment configuration

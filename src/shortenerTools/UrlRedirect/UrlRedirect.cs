@@ -1,20 +1,12 @@
 using System;
-// using System.IO;
 using System.Threading.Tasks;
-// using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
-// using Microsoft.AspNetCore.Http;
-// using System.Net.Http.Headers;
 using Microsoft.Extensions.Logging;
-// using Newtonsoft.Json;
-// using System.Linq;
 using System.Net;
 using System.Net.Http;
 using Cloud5mins.domain;
-//using Microsoft.WindowsAzure.Storage.Table;
 using Microsoft.Extensions.Configuration;
-// using Microsoft.Azure.Cosmos.Table;
 
 namespace Cloud5mins.Function
 {
